@@ -12,8 +12,8 @@ public class User {
         this.password = password;
     }
 
-    // LoginController pode verificar a senha
-    public String getPassword() {
-        return this.password;
-    }
+    // Getters necessários
+    public String getUsername() { return username; }
+    public String getNickname() { return nickname; }
+    public String getPassword() { return password; }
 }

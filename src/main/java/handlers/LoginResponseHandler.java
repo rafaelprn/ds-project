@@ -1,5 +1,6 @@
 // LoginResponseHandler.java (CORRIGIDO)
 package handlers;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -8,12 +9,13 @@ import com.google.gson.JsonSyntaxException;
 import services.LoginRequest;
 import services.LoginSuccessResponse;
 import services.LoginErrorResponse;
+import client.Client;
 
 public class LoginResponseHandler {
 
     private final Gson gson = new Gson();
 
-    public void handle(String jsonResponse) {
+    public void handle(String jsonResponse, String username) {
         // Descobrir a operação
         String opCode = getOpCodeFromJson(jsonResponse);
 
@@ -23,7 +25,9 @@ public class LoginResponseHandler {
                 try {
                     LoginSuccessResponse success = gson.fromJson(jsonResponse, LoginSuccessResponse.class);
                     System.out.println("Login bem-sucedido!");
-                    System.out.println("Seu token de acesso é: " + success.getToken());
+
+                    Client.setSession(success.getToken(), username);
+                    System.out.println("Sessão iniciada. Seu token é: " + success.getToken());
                     // Guardando token para futuras requisições
                 } catch (JsonSyntaxException e) {
                     System.out.println("Erro: A mensagem de sucesso (001) está mal formatada.");

@@ -20,6 +20,10 @@ import services.RegistrationRequest;
 import services.RegistrationRequest;
 import handlers.RegistrationHandler;
 
+import controllers.UserDataController;
+import handlers.UserDataHandler;
+import services.GetUserDataRequest;
+
 public class Server {
 
     private static final int PORT = 9345;
@@ -33,6 +37,7 @@ public class Server {
     // Nossos controllers
     private static final LoginController loginController = new LoginController();
     private static final RegistrationController registrationController = new RegistrationController();
+    private static final UserDataController userDataController = new UserDataController();
 
     public static void main(String[] args) {
         DatagramSocket socket = null;
@@ -61,6 +66,11 @@ public class Server {
                         LoginRequest loginRequest = gson.fromJson(jsonRequest, LoginRequest.class);
                         // Garanta que o userDatabase está sendo passado aqui
                         responseObject = loginController.processLoginRequest(loginRequest, activeUsers, tokenCounter, userDatabase);
+                        break;
+
+                    case "005":
+                        GetUserDataRequest userDataRequest = gson.fromJson(jsonRequest, GetUserDataRequest.class);
+                        responseObject = userDataController.process(userDataRequest, activeUsers, userDatabase);
                         break;
 
                     case "010": // Requisição de Cadastro
