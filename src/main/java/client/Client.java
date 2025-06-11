@@ -17,11 +17,20 @@ import handlers.RegistrationHandler;
 import handlers.UserDataHandler;
 import services.GetUserDataRequest;
 
+import handlers.LogoutHandler;
+import services.LogoutRequest;
+
+import handlers.UpdateProfileHandler;
+import services.UpdateProfileRequest;
+
+import handlers.DeleteAccountHandler;
+import services.DeleteAccountRequest;
+
 
 public class Client {
 
-    private static final String SERVER_ADDRESS = "127.0.0.1";
-    private static final int SERVER_PORT = 9345;
+    private static final String SERVER_ADDRESS = "192.168.15.3";
+    private static final int SERVER_PORT = 2001;
     private static String sessionToken = null;
     private static String loggedInUser = null;
 
@@ -32,7 +41,10 @@ public class Client {
 
         LoginResponseHandler loginHandler = new LoginResponseHandler();
         RegistrationHandler registrationHandler = new RegistrationHandler();
-        UserDataHandler userDataHandler = new UserDataHandler(); // NOVO
+        UserDataHandler userDataHandler = new UserDataHandler();
+        LogoutHandler logoutHandler = new LogoutHandler();
+        UpdateProfileHandler updateHandler = new UpdateProfileHandler();
+        DeleteAccountHandler deleteAccountHandler = new DeleteAccountHandler();
 
         try {
             socket = new DatagramSocket();
@@ -45,17 +57,21 @@ public class Client {
                 System.out.println("1. Login");
                 System.out.println("2. Cadastro");
                 System.out.println("3. Ver meus dados");
-                System.out.println("4. Sair");
+                System.out.println("4. Logout");
+                System.out.println("5. Alterar Cadastro");
+                System.out.println("6. Apagar Minha Conta");
+                System.out.println("7. Sair");
                 System.out.println("============================");
                 System.out.print("Opção: ");
                 String choice = scanner.nextLine();
 
-                if ("4".equals(choice)) {
+                if ("7".equals(choice)) {
                     System.out.println("Encerrando o cliente. Até logo!");
                     break;
                 }
 
                 String jsonRequest = null;
+                boolean shouldWaitForResponse = true;
 
                 // Roteamento da escolha do usuário
                 if ("1".equals(choice)) {
@@ -95,13 +111,52 @@ public class Client {
                     }
                     GetUserDataRequest userDataRequest = new GetUserDataRequest(sessionToken, loggedInUser);
                     jsonRequest = gson.toJson(userDataRequest);
+                } else if ("4".equals(choice)) {
+                    if (sessionToken == null) {
+                        System.out.println("Erro: Você precisa estar logado para fazer logout.");
+                        shouldWaitForResponse = false;
+                    } else {
+                        LogoutRequest logoutRequest = new LogoutRequest(loggedInUser, sessionToken);
+                        jsonRequest = gson.toJson(logoutRequest);
+                    }
+                } else if ("5".equals(choice)) {
+                    if (sessionToken == null) {
+                        System.out.println("Erro: Você precisa estar logado para esta operação.");
+                        shouldWaitForResponse = false;
+                    } else {
+                        System.out.println("\n--- Alteração de Cadastro ---");
+                        System.out.print("Para confirmar, digite sua senha ATUAL: ");
+                        String currentPass = scanner.nextLine();
+
+                        System.out.print("Digite o novo nick: ");
+                        String newNick = scanner.nextLine();
+
+                        System.out.print("Digite a nova senha: ");
+                        String newPass = scanner.nextLine();
+
+                        UpdateProfileRequest updateRequest = new UpdateProfileRequest(loggedInUser, currentPass, newNick, newPass, sessionToken);
+                        jsonRequest = gson.toJson(updateRequest);
+                    }
+                } else if ("6".equals(choice)) {
+                    if (sessionToken == null) {
+                        System.out.println("Erro: Você precisa estar logado para apagar sua conta.");
+                        shouldWaitForResponse = false;
+                    } else {
+                        System.out.println("\n--- APAGAR CONTA ---");
+                        System.out.println("ATENÇÃO: Esta ação é irreversível.");
+                        System.out.print("Para confirmar, digite sua senha: ");
+                        String currentPass = scanner.nextLine();
+
+                        DeleteAccountRequest deleteRequest = new DeleteAccountRequest(loggedInUser, sessionToken, currentPass);
+                        jsonRequest = gson.toJson(deleteRequest);
+                    }
                 } else {
-                    System.out.println("Opção inválida. Por favor, tente novamente.");
-                    continue;
+                    System.out.println("Opção inválida.");
+                    shouldWaitForResponse = false;
                 }
 
                 // Envia a requisição e processa a resposta (para Cadastro ou Ver Dados)
-                if (jsonRequest != null) {
+                if (shouldWaitForResponse && jsonRequest != null) {
                     sendRequest(socket, jsonRequest, enderecoServidor, SERVER_PORT);
                     String jsonResponse = receiveResponse(socket);
 
@@ -120,7 +175,16 @@ public class Client {
                         System.out.println("\n--- Resultado da Consulta ---");
                         userDataHandler.handle(jsonResponse);
 
-                        continue; // Adicionado para voltar ao menu após a operação
+                        continue;
+                    } else if ("4".equals(choice)) {
+                        System.out.println("\n--- Resultado do Logout ---");
+                        logoutHandler.handle(jsonResponse);
+                    } else if ("5".equals(choice)) {
+                        System.out.println("\n--- Resultado da Alteração ---");
+                        updateHandler.handle(jsonResponse);
+                    } else if ("6".equals(choice)) {
+                        System.out.println("\n--- Resultado da Exclusão ---");
+                        deleteAccountHandler.handle(jsonResponse);
                     }
                 }
             }
@@ -140,6 +204,11 @@ public class Client {
     public static void setSession(String token, String username) {
         sessionToken = token;
         loggedInUser = username;
+    }
+
+    public static void clearSession() {
+        sessionToken = null;
+        loggedInUser = null;
     }
 
     private static void sendRequest(DatagramSocket socket, String jsonRequest, InetAddress serverAddress, int serverPort) throws IOException {

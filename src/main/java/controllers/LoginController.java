@@ -1,10 +1,9 @@
-// Supondo que esteja no pacote 'controllers'
 package controllers;
 
 import com.google.gson.Gson;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import models.User; // Precisamos importar a classe User
+import models.User;
 import services.LoginRequest;
 import services.LoginSuccessResponse;
 import services.LoginErrorResponse;
@@ -43,7 +42,7 @@ public class LoginController {
         }
 
         // Se sucesso gerar e armazenar token
-        String token = "c" + tokenCounter.getAndIncrement();
+        String token = "a" + String.format("%05d", tokenCounter.getAndIncrement());
         activeUsers.put(token, request.getUser());
         System.out.println("[LoginController] Usuário " + request.getUser() + " logado com token: " + token);
 

@@ -24,9 +24,18 @@ import controllers.UserDataController;
 import handlers.UserDataHandler;
 import services.GetUserDataRequest;
 
+import services.LogoutRequest;
+import controllers.LogoutController;
+
+import controllers.UpdateProfileController;
+import services.UpdateProfileRequest;
+
+import controllers.DeleteAccountController;
+import services.DeleteAccountRequest;
+
 public class Server {
 
-    private static final int PORT = 9345;
+    private static final int PORT = 20000;
     private static final int BUFFER_SIZE = 1024;
     private static final Map<String, User> userDatabase = new HashMap<>();
 
@@ -38,6 +47,9 @@ public class Server {
     private static final LoginController loginController = new LoginController();
     private static final RegistrationController registrationController = new RegistrationController();
     private static final UserDataController userDataController = new UserDataController();
+    private static final LogoutController logoutController = new LogoutController();
+    private static final UpdateProfileController updateProfileController = new UpdateProfileController();
+    private static final DeleteAccountController deleteAccountController = new DeleteAccountController();
 
     public static void main(String[] args) {
         DatagramSocket socket = null;
@@ -76,6 +88,21 @@ public class Server {
                     case "010": // Requisição de Cadastro
                         RegistrationRequest regRequest = gson.fromJson(jsonRequest, RegistrationRequest.class);
                         responseObject = registrationController.processRegistration(regRequest, userDatabase);
+                        break;
+
+                    case "020":
+                        LogoutRequest logoutRequest = gson.fromJson(jsonRequest, LogoutRequest.class);
+                        responseObject = logoutController.process(logoutRequest, activeUsers);
+                        break;
+
+                    case "030":
+                        UpdateProfileRequest updateRequest = gson.fromJson(jsonRequest, UpdateProfileRequest.class);
+                        responseObject = updateProfileController.process(updateRequest, activeUsers, userDatabase);
+                        break;
+
+                    case "040":
+                        DeleteAccountRequest deleteRequest = gson.fromJson(jsonRequest, DeleteAccountRequest.class);
+                        responseObject = deleteAccountController.process(deleteRequest, activeUsers, userDatabase);
                         break;
 
                     default:
