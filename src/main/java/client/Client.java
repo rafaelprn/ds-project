@@ -29,14 +29,31 @@ import services.DeleteAccountRequest;
 
 public class Client {
 
-    private static final String SERVER_ADDRESS = "192.168.15.3";
-    private static final int SERVER_PORT = 2001;
     private static String sessionToken = null;
     private static String loggedInUser = null;
 
     public static void main(String[] args) {
-        DatagramSocket socket = null;
         Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Digite o endereço IP do servidor (pressione Enter para usar '127.0.0.1'): ");
+        String serverAddressStr = scanner.nextLine();
+        if (serverAddressStr.isEmpty()) {
+            serverAddressStr = "127.0.0.1"; // Valor padrão
+        }
+
+        int serverPort = 0;
+        while (true) {
+            try {
+                System.out.print("Digite a porta do servidor: ");
+                String portInput = scanner.nextLine();
+                serverPort = Integer.parseInt(portInput);
+                break; // Sai do loop se a porta for um número válido
+            } catch (NumberFormatException e) {
+                System.out.println("Erro: Entrada inválida. Por favor, digite um número de porta válido.");
+            }
+        }
+
+        DatagramSocket socket = null;
         Gson gson = new Gson();
 
         LoginResponseHandler loginHandler = new LoginResponseHandler();
@@ -48,7 +65,7 @@ public class Client {
 
         try {
             socket = new DatagramSocket();
-            InetAddress enderecoServidor = InetAddress.getByName(SERVER_ADDRESS);
+            InetAddress enderecoServidor = InetAddress.getByName(serverAddressStr);
 
             while (true) {
                 // Menu principal de interação com o usuário
@@ -83,7 +100,7 @@ public class Client {
                     LoginRequest loginRequest = new LoginRequest(user, pass);
                     jsonRequest = gson.toJson(loginRequest);
 
-                    sendRequest(socket, jsonRequest, enderecoServidor, SERVER_PORT);
+                    sendRequest(socket, jsonRequest, enderecoServidor, serverPort);
                     String jsonResponse = receiveResponse(socket);
 
                     System.out.println("\n--- Resultado do Login ---");
@@ -157,7 +174,7 @@ public class Client {
 
                 // Envia a requisição e processa a resposta (para Cadastro ou Ver Dados)
                 if (shouldWaitForResponse && jsonRequest != null) {
-                    sendRequest(socket, jsonRequest, enderecoServidor, SERVER_PORT);
+                    sendRequest(socket, jsonRequest, enderecoServidor, serverPort);
                     String jsonResponse = receiveResponse(socket);
 
                     if ("2".equals(choice)) {

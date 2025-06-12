@@ -9,6 +9,7 @@ import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Scanner;
 
 import controllers.LoginController;
 import services.LoginRequest;
@@ -35,7 +36,6 @@ import services.DeleteAccountRequest;
 
 public class Server {
 
-    private static final int PORT = 20000;
     private static final int BUFFER_SIZE = 1024;
     private static final Map<String, User> userDatabase = new HashMap<>();
 
@@ -43,7 +43,7 @@ public class Server {
     private static final Map<String, String> activeUsers = new HashMap<>();
     private static final AtomicInteger tokenCounter = new AtomicInteger(1);
 
-    // Nossos controllers
+    // controllers
     private static final LoginController loginController = new LoginController();
     private static final RegistrationController registrationController = new RegistrationController();
     private static final UserDataController userDataController = new UserDataController();
@@ -52,12 +52,26 @@ public class Server {
     private static final DeleteAccountController deleteAccountController = new DeleteAccountController();
 
     public static void main(String[] args) {
+        Scanner configScanner = new Scanner(System.in);
+        int port = 0;
+
+        while (true) {
+            try {
+                System.out.print("Digite a porta em que o servidor deve rodar: ");
+                String portInput = configScanner.nextLine();
+                port = Integer.parseInt(portInput);
+                break;
+            } catch (NumberFormatException e) {
+                System.out.println("Erro: Entrada inválida. Por favor, digite um número de porta válido.");
+            }
+        }
+
         DatagramSocket socket = null;
         Gson gson = new Gson();
 
         try {
-            socket = new DatagramSocket(PORT);
-            System.out.println("Servidor UDP iniciado na porta " + PORT + "...");
+            socket = new DatagramSocket(port);
+            System.out.println("Servidor UDP iniciado na porta " + port + "...");
 
             while (true) {
                 // Recebe o pacote
