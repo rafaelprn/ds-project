@@ -27,6 +27,8 @@ import handlers.GetAllUsersResponseHandler;
 import services.GetAllUsersRequest;
 import handlers.UpdateUserByAdminResponseHandler;
 import services.UpdateUserByAdminRequest;
+import handlers.DeleteUserByAdminResponseHandler;
+import services.DeleteUserByAdminRequest;
 
 public class Client {
 
@@ -77,6 +79,7 @@ public class Client {
 
             GetAllUsersResponseHandler getAllUsersHandler = new GetAllUsersResponseHandler();
             UpdateUserByAdminResponseHandler updateUserByAdminHandler = new UpdateUserByAdminResponseHandler();
+            DeleteUserByAdminResponseHandler deleteUserByAdminHandler = new DeleteUserByAdminResponseHandler();
 
             while (true) {
                 // Menu principal de interação com o usuário
@@ -94,6 +97,7 @@ public class Client {
                     System.out.println("--- Opcoes de Administrador ---");
                     System.out.println("8. Listar todos os usuarios");
                     System.out.println("9. Alterar cadastro de um usuario");
+                    System.out.println("10. Apagar cadastro de um usuario");
                 }
 
                 System.out.println("============================");
@@ -198,8 +202,22 @@ public class Client {
 
                     UpdateUserByAdminRequest request = new UpdateUserByAdminRequest(sessionToken, targetUser, newNick, newPass);
                     jsonRequest = gson.toJson(request);
-                    // -------------------------
 
+                } else if("10".equals(choice) && sessionToken != null && sessionToken.startsWith("a")) {
+                    System.out.println("\n--- Apagar Cadastro de Usuario (Admin) ---");
+                    System.out.print("Digite o nome de usuario a ser apagado: ");
+                    String targetUser = scanner.nextLine();
+
+                    System.out.print("Voce tem certeza que deseja apagar " + targetUser + "? Esta acao e irreversivel. (s/n): ");
+                    String confirmation = scanner.nextLine();
+
+                    if (confirmation.equalsIgnoreCase("s")) {
+                        DeleteUserByAdminRequest request = new DeleteUserByAdminRequest(sessionToken, targetUser);
+                        jsonRequest = gson.toJson(request);
+                    } else {
+                        System.out.println("Operacao cancelada.");
+                        shouldWaitForResponse = false;
+                    }
                 }
                 else {
                     System.out.println("Opção inválida.");
@@ -234,6 +252,9 @@ public class Client {
                     } else if ("9".equals(choice)) {
                         System.out.println("\n--- Resultado da Alteracao de Cadastro ---");
                         updateUserByAdminHandler.handle(jsonResponse);
+                    } else if ("10".equals(choice)) {
+                        System.out.println("\n--- Resultado da Exclusao de Cadastro ---");
+                        deleteUserByAdminHandler.handle(jsonResponse);
                     }
                 }
             }

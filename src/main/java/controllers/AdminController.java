@@ -8,9 +8,14 @@ import models.User;
 import services.GetAllUsersRequest;
 import services.GetAllUsersSuccessResponse;
 import services.GetAllUsersErrorResponse;
+
 import services.UpdateUserByAdminRequest;
 import services.UpdateUserByAdminSuccessResponse;
 import services.UpdateUserByAdminErrorResponse;
+
+import services.DeleteUserByAdminRequest;
+import services.DeleteUserByAdminSuccessResponse;
+import services.DeleteUserByAdminErrorResponse;
 
 public class AdminController {
 
@@ -89,5 +94,42 @@ public class AdminController {
 
         // 5. Sucesso
         return new UpdateUserByAdminSuccessResponse("Cadastro de " + targetUser + " alterado com sucesso.");
+    }
+
+    public Object processDeleteUser(DeleteUserByAdminRequest request, Map<String, String> activeUsers, Map<String, User> userDatabase) {
+        // 1. Validação de campos obrigatórios nulos
+        if (request.getToken() == null || request.getUser() == null) {
+            return new DeleteUserByAdminErrorResponse("Token ou usuario-alvo nulo.");
+        }
+
+        String token = request.getToken();
+        String targetUser = request.getUser();
+
+        // 2. Validação do token do admin
+        if (!token.startsWith("a")) {
+            return new DeleteUserByAdminErrorResponse("Operacao nao permitida para este usuario.");
+        }
+        if (!activeUsers.containsKey(token)) {
+            return new DeleteUserByAdminErrorResponse("Token invalido ou sessao expirada.");
+        }
+
+        // 3. Validação do usuário-alvo
+        if (targetUser.equals("admin123")) {
+            return new DeleteUserByAdminErrorResponse("Usuario admin nao pode ser deletado.");
+        }
+        if (!userDatabase.containsKey(targetUser)) {
+            return new DeleteUserByAdminErrorResponse("Usuario-alvo nao existe.");
+        }
+
+        // 4. Sucesso: Apaga o usuário de todos os registros
+        userDatabase.remove(targetUser); // Remove do "banco de dados" permanente
+
+        // Adicional: remove o usuário da lista de ativos se ele estiver logado
+        // Isso efetivamente força o logout do usuário deletado
+        activeUsers.values().removeIf(username -> username.equals(targetUser));
+
+        System.out.println("[AdminController] Usuario " + targetUser + " apagado pelo admin " + activeUsers.get(token));
+
+        return new DeleteUserByAdminSuccessResponse("Usuario " + targetUser + " apagado com sucesso.");
     }
 }

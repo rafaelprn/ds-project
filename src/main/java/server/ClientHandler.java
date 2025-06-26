@@ -30,6 +30,7 @@ import services.UpdateProfileRequest;
 import controllers.AdminController;
 import services.GetAllUsersRequest;
 import services.UpdateUserByAdminRequest;
+import services.DeleteUserByAdminRequest;
 
 
 // A classe ClientHandler implementa Runnable para poder ser executada em uma thread
@@ -108,12 +109,16 @@ public class ClientHandler implements Runnable {
                         responseObject = updateProfileController.process(updateRequest, activeUsers, userDatabase);
                         break;
                     case "040": // Delete Account
-                        DeleteAccountRequest deleteRequest = gson.fromJson(jsonRequest, DeleteAccountRequest.class);
-                        responseObject = deleteAccountController.process(deleteRequest, activeUsers, userDatabase);
+                        DeleteAccountRequest deleteOwnAccountRequest = gson.fromJson(jsonRequest, DeleteAccountRequest.class);
+                        responseObject = deleteAccountController.process(deleteOwnAccountRequest, activeUsers, userDatabase);
                         break;
                     case "080":
                         UpdateUserByAdminRequest updateUserRequest = gson.fromJson(jsonRequest, UpdateUserByAdminRequest.class);
                         responseObject = adminController.processUpdateUser(updateUserRequest, activeUsers, userDatabase);
+                        break;
+                    case "090":
+                        DeleteUserByAdminRequest deleteUserByAdminRequest = gson.fromJson(jsonRequest, DeleteUserByAdminRequest.class);
+                        responseObject = adminController.processDeleteUser(deleteUserByAdminRequest, activeUsers, userDatabase);
                         break;
                     case "110":
                         GetAllUsersRequest getAllUsersRequest = gson.fromJson(jsonRequest, GetAllUsersRequest.class);
