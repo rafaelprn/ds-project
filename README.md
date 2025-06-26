@@ -32,3 +32,6 @@ Você pode rodar uma ou várias instâncias do cliente para se conectar ao servi
     * **Endereço IP:** Digite o endereço IP da máquina onde o servidor está rodando. Se for no mesmo computador, você pode utilizar `localhost`
     * **Porta:** Digite a mesma porta que você configurou no servidor (ex: `20000`).
 3.  Após a configuração, o menu principal de funcionalidades será exibido. Siga as instruções no terminal para interagir com o sistema (fazer login, cadastrar, etc.).
+
+### 4. Admin
+Agora há um user admin que possui permissões especiais, para usá-lo basta logar com o user: admin123 e senha: admin123.
