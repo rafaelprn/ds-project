@@ -43,6 +43,8 @@ import services.UpdateProfileRequest;
 import controllers.DeleteAccountController;
 import services.DeleteAccountRequest;
 
+import controllers.AdminController;
+
 
 public class Server {
 
@@ -60,9 +62,14 @@ public class Server {
     private static final LogoutController logoutController = new LogoutController();
     private static final UpdateProfileController updateProfileController = new UpdateProfileController();
     private static final DeleteAccountController deleteAccountController = new DeleteAccountController();
+
+    private static final AdminController adminController = new AdminController(); //admin
+
     private static final Gson gson = new Gson();
 
     public static void main(String[] args) {
+        addAdminUser();
+
         Scanner configScanner = new Scanner(System.in);
         int port = 0;
 
@@ -99,7 +106,8 @@ public class Server {
                         userDataController,
                         logoutController,
                         updateProfileController,
-                        deleteAccountController
+                        deleteAccountController,
+                        adminController
                 );
 
                 new Thread(clientHandler).start();
@@ -107,6 +115,16 @@ public class Server {
         } catch (IOException e) {
             System.err.println("Erro no servidor: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    private static void addAdminUser() {
+        String adminUser = "admin123";
+        // Só adiciona o admin se ele não existir, para evitar sobreposição
+        if (!userDatabase.containsKey(adminUser)) {
+            User admin = new User(adminUser, "admin123", "admin123");
+            userDatabase.put(adminUser, admin);
+            System.out.println("Usuário administrador 'admin123' criado e pronto para uso.");
         }
     }
 }

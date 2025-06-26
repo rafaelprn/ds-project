@@ -42,8 +42,16 @@ public class LoginController {
         }
 
         // Se sucesso gerar e armazenar token
-        String token = "a" + String.format("%05d", tokenCounter.getAndIncrement());
+        String tokenPrefix;
+        if ("admin123".equals(username)) {
+            tokenPrefix = "a"; // Prefixo para admin
+        } else {
+            tokenPrefix = "c"; // Prefixo para cliente/usuário comum
+        }
+
+        String token = tokenPrefix + String.format("%05d", tokenCounter.getAndIncrement());
         activeUsers.put(token, request.getUser());
+
         System.out.println("[LoginController] Usuário " + request.getUser() + " logado com token: " + token);
 
         return new LoginSuccessResponse(token);

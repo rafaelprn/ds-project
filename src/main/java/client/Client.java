@@ -23,6 +23,9 @@ import services.UpdateProfileRequest;
 import handlers.DeleteAccountHandler;
 import services.DeleteAccountRequest;
 
+import handlers.GetAllUsersResponseHandler;
+import services.GetAllUsersRequest;
+
 public class Client {
 
     private static String sessionToken = null;
@@ -69,6 +72,8 @@ public class Client {
             UpdateProfileHandler updateHandler = new UpdateProfileHandler();
             DeleteAccountHandler deleteAccountHandler = new DeleteAccountHandler();
 
+            GetAllUsersResponseHandler getAllUsersHandler = new GetAllUsersResponseHandler(); // Novo handler
+
             while (true) {
                 // Menu principal de interação com o usuário
                 System.out.println("\n============================");
@@ -80,6 +85,12 @@ public class Client {
                 System.out.println("5. Alterar Cadastro");
                 System.out.println("6. Apagar Minha Conta");
                 System.out.println("7. Sair");
+
+                if (sessionToken != null && sessionToken.startsWith("a")) {
+                    System.out.println("--- Opcoes de Administrador ---");
+                    System.out.println("8. Listar todos os usuarios");
+                }
+
                 System.out.println("============================");
                 System.out.print("Opção: ");
                 String choice = scanner.nextLine();
@@ -166,7 +177,11 @@ public class Client {
                         DeleteAccountRequest deleteRequest = new DeleteAccountRequest(loggedInUser, sessionToken, currentPass);
                         jsonRequest = gson.toJson(deleteRequest);
                     }
-                } else {
+                } else if ("8".equals(choice) && sessionToken != null && sessionToken.startsWith("a")) {
+                    GetAllUsersRequest request = new GetAllUsersRequest(sessionToken);
+                    jsonRequest = gson.toJson(request);
+                }
+                else {
                     System.out.println("Opção inválida.");
                     shouldWaitForResponse = false;
                 }
@@ -193,6 +208,9 @@ public class Client {
                     } else if ("6".equals(choice)) {
                         System.out.println("\n--- Resultado da Exclusão ---");
                         deleteAccountHandler.handle(jsonResponse);
+                    } else if ("8".equals(choice)) {
+                        System.out.println("\n--- Resultado da Listagem de Usuarios ---");
+                        getAllUsersHandler.handle(jsonResponse);
                     }
                 }
             }

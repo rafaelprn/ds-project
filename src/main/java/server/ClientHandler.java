@@ -27,6 +27,9 @@ import services.GetUserDataRequest;
 import services.DeleteAccountRequest;
 import services.UpdateProfileRequest;
 
+import controllers.AdminController;
+import services.GetAllUsersRequest;
+
 
 // A classe ClientHandler implementa Runnable para poder ser executada em uma thread
 public class ClientHandler implements Runnable {
@@ -45,11 +48,13 @@ public class ClientHandler implements Runnable {
     private final UpdateProfileController updateProfileController;
     private final DeleteAccountController deleteAccountController;
 
+    private final AdminController adminController; //admin
+
     private PrintWriter out;
     private BufferedReader in;
 
     // O construtor recebe tudo o que precisa do servidor principal
-    public ClientHandler(Socket socket, Gson gson, Map<String, User> userDatabase, Map<String, String> activeUsers, AtomicInteger tokenCounter, LoginController loginController, RegistrationController registrationController, UserDataController userDataController, LogoutController logoutController, UpdateProfileController updateProfileController, DeleteAccountController deleteAccountController) {
+    public ClientHandler(Socket socket, Gson gson, Map<String, User> userDatabase, Map<String, String> activeUsers, AtomicInteger tokenCounter, LoginController loginController, RegistrationController registrationController, UserDataController userDataController, LogoutController logoutController, UpdateProfileController updateProfileController, DeleteAccountController deleteAccountController, AdminController adminController) {
         this.clientSocket = socket;
         this.gson = gson;
         this.userDatabase = userDatabase;
@@ -61,6 +66,7 @@ public class ClientHandler implements Runnable {
         this.logoutController = logoutController;
         this.updateProfileController = updateProfileController;
         this.deleteAccountController = deleteAccountController;
+        this.adminController = adminController; //admin
     }
 
     @Override
@@ -103,6 +109,10 @@ public class ClientHandler implements Runnable {
                     case "040": // Delete Account
                         DeleteAccountRequest deleteRequest = gson.fromJson(jsonRequest, DeleteAccountRequest.class);
                         responseObject = deleteAccountController.process(deleteRequest, activeUsers, userDatabase);
+                        break;
+                    case "110":
+                        GetAllUsersRequest getAllUsersRequest = gson.fromJson(jsonRequest, GetAllUsersRequest.class);
+                        responseObject = adminController.processGetAllUsers(getAllUsersRequest, activeUsers, userDatabase);
                         break;
                     default:
                         System.out.println("Operação desconhecida: " + opCode);
