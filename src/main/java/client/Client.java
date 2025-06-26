@@ -25,6 +25,8 @@ import services.DeleteAccountRequest;
 
 import handlers.GetAllUsersResponseHandler;
 import services.GetAllUsersRequest;
+import handlers.UpdateUserByAdminResponseHandler;
+import services.UpdateUserByAdminRequest;
 
 public class Client {
 
@@ -72,7 +74,9 @@ public class Client {
             UpdateProfileHandler updateHandler = new UpdateProfileHandler();
             DeleteAccountHandler deleteAccountHandler = new DeleteAccountHandler();
 
-            GetAllUsersResponseHandler getAllUsersHandler = new GetAllUsersResponseHandler(); // Novo handler
+
+            GetAllUsersResponseHandler getAllUsersHandler = new GetAllUsersResponseHandler();
+            UpdateUserByAdminResponseHandler updateUserByAdminHandler = new UpdateUserByAdminResponseHandler();
 
             while (true) {
                 // Menu principal de interação com o usuário
@@ -89,6 +93,7 @@ public class Client {
                 if (sessionToken != null && sessionToken.startsWith("a")) {
                     System.out.println("--- Opcoes de Administrador ---");
                     System.out.println("8. Listar todos os usuarios");
+                    System.out.println("9. Alterar cadastro de um usuario");
                 }
 
                 System.out.println("============================");
@@ -180,6 +185,21 @@ public class Client {
                 } else if ("8".equals(choice) && sessionToken != null && sessionToken.startsWith("a")) {
                     GetAllUsersRequest request = new GetAllUsersRequest(sessionToken);
                     jsonRequest = gson.toJson(request);
+                } else if ("9".equals(choice) && sessionToken != null && sessionToken.startsWith("a")) {
+                    System.out.println("\n--- Alterar Cadastro de Usuario (Admin) ---");
+                    System.out.print("Digite o nome de usuario a ser alterado: ");
+                    String targetUser = scanner.nextLine();
+
+                    System.out.print("Digite o novo nick (deixe em branco para nao alterar): ");
+                    String newNick = scanner.nextLine();
+
+                    System.out.print("Digite a nova senha (deixe em branco para nao alterar): ");
+                    String newPass = scanner.nextLine();
+
+                    UpdateUserByAdminRequest request = new UpdateUserByAdminRequest(sessionToken, targetUser, newNick, newPass);
+                    jsonRequest = gson.toJson(request);
+                    // -------------------------
+
                 }
                 else {
                     System.out.println("Opção inválida.");
@@ -211,6 +231,9 @@ public class Client {
                     } else if ("8".equals(choice)) {
                         System.out.println("\n--- Resultado da Listagem de Usuarios ---");
                         getAllUsersHandler.handle(jsonResponse);
+                    } else if ("9".equals(choice)) {
+                        System.out.println("\n--- Resultado da Alteracao de Cadastro ---");
+                        updateUserByAdminHandler.handle(jsonResponse);
                     }
                 }
             }
